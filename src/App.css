@@ -1,0 +1,17 @@
+
+/* Navbar */
+.navbar {
+  padding: 1.3rem 3rem;
+  background-color: white;
+  box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
+}
+.navbar .svg {
+  /* font-family: 'Nosifer', cursive; */
+  font-family: "Rubik Mono One", monospace;
+  font-size: 2rem;
+}
+.navbar .editor {
+  font-family: 'Pixelify Sans', sans-serif;
+  font-size: 2rem;
+  margin-left: 0.1rem;
+}
