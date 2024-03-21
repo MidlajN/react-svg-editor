@@ -3,7 +3,7 @@
 export default function Navbar() {
     return (
         <>
-           <div className="flex w-full items-center justify-between navbar">
+           <div className="flex w-full items-center justify-between navbar h-[9%]">
                <div className="heading">
                    <span className="svg">SVG</span><span className="editor">Editor</span>
                </div>
