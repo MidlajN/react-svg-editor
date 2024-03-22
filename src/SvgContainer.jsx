@@ -1,9 +1,11 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { fabric } from "fabric";
 import "./SvgContainer.css";
+import ObjectConfigs from "./Configs";
 
 export default function SvgContainer() {
   const canvasRef = useRef(null);
+  const [axisPosition, setAxisPosition] = useState({ x: 0, y: 0, scaleX: 0, scaleY: 0 });
 
   useEffect(() => {
     const canvas = new fabric.Canvas(canvasRef.current, {
@@ -14,12 +16,27 @@ export default function SvgContainer() {
     
     // Make the canvas globally accessible
     window.canvas = canvas;
-
+    canvas.on("mouse:move", (e) => {
+      const activeObject = canvas.getActiveObject();
+      if (activeObject) {
+        console.log('activeObject', activeObject)
+        const roundX = parseFloat(activeObject.left.toFixed(2));
+        const roundY = parseFloat(activeObject.top.toFixed(2));
+        const roundScaleX = parseFloat(activeObject.scaleX.toFixed(2));
+        const roundScaleY = parseFloat(activeObject.scaleY.toFixed(2));
+        setAxisPosition({ x: roundX, y: roundY, scaleX: roundScaleX, scaleY: roundScaleY });
+        // console.log('svg', activeObject.toSVG())
+      }
+    });
     // Cleanup function to dispose the canvas when the component unmounts
     return () => {
       canvas.dispose();
     };
   }, []);
+
+  const handleDragOver = (event) => {
+    event.preventDefault();
+  };
 
   const handleDrop = (e) => {
     e.preventDefault();
@@ -31,16 +48,19 @@ export default function SvgContainer() {
       fabric.loadSVGFromString(svgString, (objects, options) => {
         const obj = fabric.util.groupSVGElements(objects, options);
 
+        console.log('width', canvas.getWidth(), 'height', canvas.getHeight())
+        console.log('width', obj.width, 'height', obj.height)
         // Fit the SVG to the canvas dimensions
-        if (obj.width > canvasRef.current.width || obj.height > canvasRef.current.height) {
-          const scaleX = canvasRef.current.width / obj.width;
-          const scaleY = canvasRef.current.height / obj.height;
+        if (obj.width > canvas.getWidth() || obj.height > canvas.getHeight()) {
+          const scaleX = canvas.width / obj.width;
+          const scaleY = canvas.height / obj.height;
           const scale = Math.min(scaleX, scaleY);
 
           obj.scale(scale);
         }
 
         obj.set({ selectable: true, hasControls: true });
+
 
         canvas.add(obj);
         canvas.renderAll();
@@ -49,13 +69,10 @@ export default function SvgContainer() {
     reader.readAsText(e.dataTransfer.files[0]);
   };
 
-  const handleDragOver = (event) => {
-    event.preventDefault();
-  };
 
   return (
     <div
-      className="w-full h-full flex items-center justify-center"
+      className="w-full h-full flex items-center flex-col justify-center"
       style={{
         backgroundImage:
           "repeating-conic-gradient(#ededed 0deg, #ededed 25%, transparent 0deg, transparent 50%)",
@@ -70,6 +87,12 @@ export default function SvgContainer() {
       >
         <canvas ref={canvasRef}></canvas>
       </div>
+      <div className="values">
+        <p>ScaleX : <span>{axisPosition.scaleX}</span> &nbsp;&nbsp;&nbsp; ScaleY : <span>{axisPosition.scaleY}</span></p>
+        <p>X : <span>{axisPosition.x}</span> &nbsp;&nbsp;&nbsp; Y : <span>{axisPosition.y}</span></p>
+      </div>
+      
+      <ObjectConfigs />
     </div>
   );
 }
