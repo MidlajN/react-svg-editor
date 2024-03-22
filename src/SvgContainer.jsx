@@ -5,7 +5,7 @@ import ObjectConfigs from "./Configs";
 
 export default function SvgContainer() {
   const canvasRef = useRef(null);
-  const [axisPosition, setAxisPosition] = useState({ x: 0, y: 0, scaleX: 0, scaleY: 0 });
+  const [axisPosition, setAxisPosition] = useState({ x: 0, y: 0, scaleX: 0, scaleY: 0, rotateAngle: 0 });
 
   useEffect(() => {
     const canvas = new fabric.Canvas(canvasRef.current, {
@@ -24,7 +24,8 @@ export default function SvgContainer() {
         const roundY = parseFloat(activeObject.top.toFixed(2));
         const roundScaleX = parseFloat(activeObject.scaleX.toFixed(2));
         const roundScaleY = parseFloat(activeObject.scaleY.toFixed(2));
-        setAxisPosition({ x: roundX, y: roundY, scaleX: roundScaleX, scaleY: roundScaleY });
+        const roundAngle = parseFloat(activeObject.angle.toFixed(2));
+        setAxisPosition({ x: roundX, y: roundY, scaleX: roundScaleX, scaleY: roundScaleY, rotateAngle: roundAngle });
         // console.log('svg', activeObject.toSVG())
       }
     });
@@ -72,7 +73,7 @@ export default function SvgContainer() {
 
   return (
     <div
-      className="w-full h-full flex items-center flex-col justify-center"
+      className="w-full h-full flex items-center flex-col justify-center relative"
       style={{
         backgroundImage:
           "repeating-conic-gradient(#ededed 0deg, #ededed 25%, transparent 0deg, transparent 50%)",
@@ -92,7 +93,13 @@ export default function SvgContainer() {
         <p>X : <span>{axisPosition.x}</span> &nbsp;&nbsp;&nbsp; Y : <span>{axisPosition.y}</span></p>
       </div>
       
-      <ObjectConfigs />
+      <ObjectConfigs 
+        scaleX={axisPosition.scaleX} 
+        scaleY={axisPosition.scaleY} 
+        axisX={axisPosition.x} 
+        axisY={axisPosition.y}
+        rotateAngle={axisPosition.rotateAngle}
+      />
     </div>
   );
 }

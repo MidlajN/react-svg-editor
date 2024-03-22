@@ -1,10 +1,71 @@
 .configs {
     padding: 1rem;
     position: absolute;
-    right: 0;
-    background: white;
+    right: 2rem;
+    background: #cccccc94;
     margin: 1rem;
     box-shadow: rgba(53, 26, 175, 0.25) 0px 4px 8px -2px, rgba(46, 12, 92, 0.08) 0px 0px 0px 1px;
     border-radius: 0.5rem;
+}
+
+.configs .toggleButton {
+    width: fit-content;
+    position: absolute;
+    top: -1.8rem;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.configs .toggleButton button {
+    padding: 1rem;
+    background-color: #7f77ebe3;
+    color: white;
+    border-radius: 50%;
+}
+
+
+
+
+.configs .config {
+    display: flex;
+    text-wrap: nowrap;
+    position: relative;
+}
+.configs .config div {
+    border-bottom: 2px solid rgb(255, 255, 255);
+    padding-right: 0.6rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.05rem;
+    display: flex;
+}
+.configs .config div span {
+    margin-top: auto;
+    color: #262777f0;
+}
+
+.configs .config .translate,
+.configs .config .scale,
+.configs .config .rotate {
+    width: 100%;
+    background-color: transparent;
+    border: none;
+    outline: none;
+    color: rgb(75, 75, 75);
+    border-bottom: 2px solid rgb(255, 255, 255);
+    text-align: end;
+    transition: 0.5s ease;
+}
+.configs .config .scale:focus {
+    border-bottom: 2px solid rgba(208, 142, 255, 0.548);
+}
+
+.configs .config .rotate {
+    text-align: center;
+
+}
+.configs .config .rotateDeg {
+    font-size: 0.7rem;
+    font-weight: 500;
 }
 

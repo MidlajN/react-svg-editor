@@ -12,7 +12,7 @@ function App() {
 
   return (
     <>
-      <div className='h-screen'>
+      <div className='h-screen overflow-hidden'>
         <Navbar />
         
         <div className="flex h-[91%]">
