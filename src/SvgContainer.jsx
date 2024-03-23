@@ -5,7 +5,8 @@ import ObjectConfigs from "./Configs";
 
 export default function SvgContainer() {
   const canvasRef = useRef(null);
-  const [axisPosition, setAxisPosition] = useState({ x: 0, y: 0, scaleX: 0, scaleY: 0, rotateAngle: 0 });
+  const [objectValues, setObjectValues] = useState({ x: 0, y: 0, scaleX: 0, scaleY: 0, rotateAngle: 0 });
+  const [prevObject, setPrevObject] = useState(objectValues);
 
   useEffect(() => {
     const canvas = new fabric.Canvas(canvasRef.current, {
@@ -19,14 +20,15 @@ export default function SvgContainer() {
     canvas.on("mouse:move", (e) => {
       const activeObject = canvas.getActiveObject();
       if (activeObject) {
-        console.log('activeObject', activeObject)
         const roundX = parseFloat(activeObject.left.toFixed(2));
         const roundY = parseFloat(activeObject.top.toFixed(2));
         const roundScaleX = parseFloat(activeObject.scaleX.toFixed(2));
         const roundScaleY = parseFloat(activeObject.scaleY.toFixed(2));
         const roundAngle = parseFloat(activeObject.angle.toFixed(2));
-        setAxisPosition({ x: roundX, y: roundY, scaleX: roundScaleX, scaleY: roundScaleY, rotateAngle: roundAngle });
-        // console.log('svg', activeObject.toSVG())
+
+        const object = { x: roundX, y: roundY, scaleX: roundScaleX, scaleY: roundScaleY, rotateAngle: roundAngle }
+        setObjectValues(object);
+        setPrevObject(object);
       }
     });
     // Cleanup function to dispose the canvas when the component unmounts
@@ -34,6 +36,28 @@ export default function SvgContainer() {
       canvas.dispose();
     };
   }, []);
+
+
+  useEffect(() => {
+    const canvas = window.canvas;
+    if (!isEqual(prevObject, objectValues)) {
+        const activeObject = canvas.getActiveObject();
+        console.log(activeObject)
+        if (activeObject) {
+          activeObject.set({ 
+            left: objectValues.x, 
+            top: objectValues.y, 
+            scaleX: objectValues.scaleX, 
+            scaleY: objectValues.scaleY, 
+            angle: objectValues.rotateAngle,
+            originX: 'left',
+            originY: 'top'
+          });
+          canvas.renderAll();
+        }
+    }
+  },[objectValues])
+
 
   const handleDragOver = (event) => {
     event.preventDefault();
@@ -49,19 +73,15 @@ export default function SvgContainer() {
       fabric.loadSVGFromString(svgString, (objects, options) => {
         const obj = fabric.util.groupSVGElements(objects, options);
 
-        console.log('width', canvas.getWidth(), 'height', canvas.getHeight())
-        console.log('width', obj.width, 'height', obj.height)
         // Fit the SVG to the canvas dimensions
         if (obj.width > canvas.getWidth() || obj.height > canvas.getHeight()) {
           const scaleX = canvas.width / obj.width;
           const scaleY = canvas.height / obj.height;
           const scale = Math.min(scaleX, scaleY);
-
           obj.scale(scale);
         }
 
         obj.set({ selectable: true, hasControls: true });
-
 
         canvas.add(obj);
         canvas.renderAll();
@@ -89,17 +109,50 @@ export default function SvgContainer() {
         <canvas ref={canvasRef}></canvas>
       </div>
       <div className="values">
-        <p>ScaleX : <span>{axisPosition.scaleX}</span> &nbsp;&nbsp;&nbsp; ScaleY : <span>{axisPosition.scaleY}</span></p>
-        <p>X : <span>{axisPosition.x}</span> &nbsp;&nbsp;&nbsp; Y : <span>{axisPosition.y}</span></p>
+        <p>ScaleX : <span>{objectValues.scaleX}</span> &nbsp;&nbsp;&nbsp; ScaleY : <span>{objectValues.scaleY}</span></p>
+        <p>X : <span>{objectValues.x}</span> &nbsp;&nbsp;&nbsp; Y : <span>{objectValues.y}</span></p>
       </div>
       
       <ObjectConfigs 
-        scaleX={axisPosition.scaleX} 
-        scaleY={axisPosition.scaleY} 
-        axisX={axisPosition.x} 
-        axisY={axisPosition.y}
-        rotateAngle={axisPosition.rotateAngle}
+        setObjectValues={setObjectValues}
+        objectValues={objectValues}
+        setPrevObject={setPrevObject}
       />
     </div>
   );
+}
+
+
+export function isEqual(obj1, obj2) {
+  // Base Case
+  if (obj1 === obj2) {
+    return true;
+  }
+  // If any of the objects is null or not an object
+  if (obj1 === null || typeof obj1 !== 'object' || obj2 === null || typeof obj2 !== 'object') {
+    return false;
+  }
+
+  // Handle Arrays
+  if (Array.isArray(obj1) && Array.isArray(obj2)) {
+    if (obj1.length !== obj2.length) return false;
+    for (let i = 0; i < obj1.length; i++) {
+      if (!isEqual(obj1[i], obj2[i])) return false; 
+    }
+    return true;
+  }
+
+  // Handle Objects
+  const keys1 = Object.keys(obj1);
+  const keys2 = Object.keys(obj2);
+
+  // Check if both objects have the same number of keys
+  if (keys1.length !== keys2.length) return false;
+
+  // Compare each property
+  for (const key in keys1){
+    if (!keys2.includes(key) || !isEqual(obj1[key], obj2[key])) return false;
+  }
+
+  return true;
 }

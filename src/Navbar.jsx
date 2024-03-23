@@ -8,7 +8,7 @@ export default function Navbar() {
                    <span className="svg">SVG</span><span className="editor">Editor</span>
                </div>
                <div className="github">
-                   <a href="#">
+                   <a href="https://github.com/MidlajN/react-svg-editor" target="_blank">
                        <i className="fa-brands fa-github fa-2xl"></i>
                     </a>
                </div>
