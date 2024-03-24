@@ -5,8 +5,10 @@ import ObjectConfigs from "./Configs";
 
 export default function SvgContainer() {
   const canvasRef = useRef(null);
+  const dropAreaRef = useRef(null);
   const [objectValues, setObjectValues] = useState({ x: 0, y: 0, scaleX: 0, scaleY: 0, rotateAngle: 0 });
   const [prevObject, setPrevObject] = useState(objectValues);
+  const [message, setMessage] = useState(null);
 
   useEffect(() => {
     const canvas = new fabric.Canvas(canvasRef.current, {
@@ -64,9 +66,16 @@ export default function SvgContainer() {
   };
 
   const handleDrop = (e) => {
-    e.preventDefault();
-    const reader = new FileReader();
 
+    e.preventDefault();
+    const file = e.dataTransfer.files[0];
+    if (file.type !== "image/svg+xml") {
+      setMessage("Uploaded File is Not Valid SVG.");
+      return;
+    }
+
+    dropAreaRef.current.style.display = 'none'
+    const reader = new FileReader();
     reader.onload = (e) => {
       const svgString = e.target.result;
 
@@ -87,7 +96,7 @@ export default function SvgContainer() {
         canvas.renderAll();
       });
     };
-    reader.readAsText(e.dataTransfer.files[0]);
+    reader.readAsText(file);
   };
 
 
@@ -97,7 +106,7 @@ export default function SvgContainer() {
       style={{
         backgroundImage:
           "repeating-conic-gradient(#ededed 0deg, #ededed 25%, transparent 0deg, transparent 50%)",
-        backgroundSize: "16px 16px",
+          backgroundSize: "16px 16px",
       }}
     >
       <div
@@ -106,12 +115,19 @@ export default function SvgContainer() {
         onDrop={handleDrop}
         onDragOver={handleDragOver}
       >
-        <canvas ref={canvasRef}></canvas>
+        <div className="dropArea" ref={ dropAreaRef }>
+          <div className="content">
+          <p>Drop You SVG File here</p>
+          <span>{ message }</span>
+          </div>
+        </div>
+        <canvas ref={ canvasRef }></canvas>
       </div>
       <div className="values">
         <p>ScaleX : <span>{objectValues.scaleX}</span> &nbsp;&nbsp;&nbsp; ScaleY : <span>{objectValues.scaleY}</span></p>
         <p>X : <span>{objectValues.x}</span> &nbsp;&nbsp;&nbsp; Y : <span>{objectValues.y}</span></p>
       </div>
+
       
       <ObjectConfigs 
         setObjectValues={setObjectValues}

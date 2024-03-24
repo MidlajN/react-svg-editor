@@ -21,3 +21,51 @@
     font-size: 12px;
     color: rgb(0, 0, 0);
 }
+
+.dropArea {
+    position: absolute;
+    z-index: 1;
+    display: flex;
+    align-items: center; 
+    justify-content: center;
+    width: 800px;
+    height: 700px;
+    
+}
+.dropArea .content {
+    padding: 2rem 5rem;
+    background: #ccddff5e;
+    /* border-radius: .5rem; */
+    /* min-height: 7rem; */
+    /* text-align: center; */
+    /* box-shadow: rgb(194 194 255 / 37%) 0px 5px 15px; */
+}
+.dropArea .content p {
+    text-align: center;
+    font-size: 18px;
+    font-weight: 500;
+    color: #4c679d;
+    font-family: 'Pixelify Sans';
+    letter-spacing: 0.02rem;
+}
+.dropArea .content span {
+    font-size: 13px;
+    color: #f84343;
+    font-weight: 400;
+    letter-spacing: 0.01rem;
+}
+
+
+
+
+
+
+
+
+
+@media (max-width: 900px) {
+    .values {
+        flex-direction: column;
+        align-items: center;
+    }
+}
