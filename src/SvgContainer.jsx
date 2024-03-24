@@ -65,10 +65,8 @@ export default function SvgContainer() {
     event.preventDefault();
   };
 
-  const handleDrop = (e) => {
+  const handleFile = (file) => {
 
-    e.preventDefault();
-    const file = e.dataTransfer.files[0];
     if (file.type !== "image/svg+xml") {
       setMessage("Uploaded File is Not Valid SVG.");
       return;
@@ -112,13 +110,14 @@ export default function SvgContainer() {
       <div
         className="fabricCanvas"
         id="canvas"
-        onDrop={handleDrop}
+        onDrop={ (e) => { e.preventDefault(); handleFile(e.dataTransfer.files[0]) } }
         onDragOver={handleDragOver}
       >
         <div className="dropArea" ref={ dropAreaRef }>
           <div className="content">
-          <p>Drop You SVG File here</p>
-          <span>{ message }</span>
+            <p>Drop You SVG File here</p>
+            <input type="file" onChange={ (e) => handleFile(e.target.files[0])  } />
+            <span>{ message }</span>
           </div>
         </div>
         <canvas ref={ canvasRef }></canvas>

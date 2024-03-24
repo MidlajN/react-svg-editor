@@ -39,6 +39,9 @@
     /* min-height: 7rem; */
     /* text-align: center; */
     /* box-shadow: rgb(194 194 255 / 37%) 0px 5px 15px; */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 .dropArea .content p {
     text-align: center;
@@ -48,19 +51,13 @@
     font-family: 'Pixelify Sans';
     letter-spacing: 0.02rem;
 }
+
 .dropArea .content span {
     font-size: 13px;
     color: #f84343;
     font-weight: 400;
     letter-spacing: 0.01rem;
 }
-
-
-
-
-
-
-
 
 
 @media (max-width: 900px) {

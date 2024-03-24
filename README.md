@@ -16,11 +16,11 @@ This React-based SVG image editor application, developed with Vite, offers ideal
 ## Getting Started
 
 1. Clone the repository: 
-`git clone https://github.com/your-username/svg-image-editor.git`
-2. Navigate to the project directory: `cd svg-image-editor`
+`git clone https://github.com/MidlajN/react-svg-editor.git`
+2. Navigate to the project directory: `cd react-svg-editor`
 3. Install dependencies: `npm install`
 4. Start the development server: `npm run dev`
-5. Open `http://localhost:3000` in your browser.
+5. Open ` http://localhost:5173` in your browser.
 
 ## Usage
 
