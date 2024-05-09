@@ -53,72 +53,74 @@ export default function SvgContainer() {
   const handleNewSVg = () => {
     const activeObject = canvas.getActiveObject();
 
-
     if (activeObject.get('type') === 'activeSelection' || !activeObject) return;
 
     activeObject.clone((cloned) => {
-      console.log('Cloned Object ::', activeObject)
       const objects = cloned._objects;
-      console.log(activeObject.get('type'))
-
       if (!objects && cloned.path) {
         const mainArray = [];
-        // for (let i = 0; i < objects.length; i++) {
-          const paths = cloned.path;
-          let array = [];
+        const paths = cloned.path;
+        let array = [];
 
-          for (let j = 0; j < paths.length; j++) {
-            const line = paths[j] ? paths[j].join(' ') : null;
-            const command = paths[j] ? paths[j][0] : null;
+        for (let j = 0; j < paths.length; j++) {
+          const line = paths[j] ? paths[j].join(' ') : null;
+          const command = paths[j] ? paths[j][0] : null;
 
-            if (command === 'M' || j === paths.length - 1) {
-              if (array.length) {
-                // const [m, x, y] = array[0].split(' ')
-                let x = cloned.left + cloned.pathOffset
-                mainArray.push({mX : parseFloat(x), mY: parseFloat(y), path: array.join(' ')})
-              };
-              array = [];
-              array.push(line)
-              continue;
-            }
+          if (command === 'M' || j === paths.length - 1) {
+            if (array.length) {
+              let x = cloned.left + cloned.pathOffset.x;
+              let y = cloned.top + cloned.pathOffset.y;
+
+              mainArray.push({mX : parseFloat(x), mY: parseFloat(y), path: array.join(' ')})
+            };
+            array = [];
             array.push(line)
+            continue;
           }
-        // }
+          array.push(line)
+        }
 
+        let fabricPaths = []
         mainArray.forEach(path => {
           if (path !== null) {
             const fabricPath = new fabric.Path(path.path)
-            fabricPath.set({ selectable : true, hasControls: true,  scaleX: activeObject.scaleX, scaleY: activeObject.scaleY, top: activeObject.top, left: activeObject.left });
-            canvas.add(fabricPath)
+            fabricPath.set({ 
+              selectable : true, 
+              hasControls: true,  
+            });
+            fabricPaths.push(fabricPath)
           }
-        })
-      } else {
-        objects.forEach(obj => {
-          canvas.discardActiveObject();
-          console.log('TOP : ', activeObject.top, '\t : ', obj.top, ' TOTAL : ', activeObject.top + obj.top, '\nLEFT : ', activeObject.left, '\t : ', obj.left, ' TOTAL : ', activeObject.left + obj.left)
-          obj.set({
-            top: activeObject.top - obj.top * activeObject.scaleX,
-            left: activeObject.left - obj.left * activeObject.scaleY,
-            scaleX: activeObject.scaleX * 3.78,
-            scaleY: activeObject.scaleY * 3.78,
-            angle: activeObject.angle,
-            evented: true,
-          })
+        });
 
-          canvas.add(obj)
-          canvas.setZoom(1)
-          canvas.renderAll()
+        let select = new fabric.ActiveSelection(fabricPaths,{canvas: canvas});
+        canvas.discardActiveObject();
+        select.set({
+          top: activeObject.top,
+          left: activeObject.left,
+          scaleX: activeObject.scaleX,
+          scaleY: activeObject.scaleY,
+          angle: activeObject.angle
         })
+        select.toActiveSelection();
+        canvas.renderAll();
+
+      } else if (objects !== undefined) {
+        canvas.getActiveObject().toActiveSelection();
+        canvas.renderAll();
       }
       canvas.remove(activeObject);
     });
+  }
+
+  const infoFabric = () => {
+    const activeObject = canvas.getActiveObject();
+    console.log('Active Object Info : ', activeObject)
   }
 
   useEffect(() => {
     const canvas = window.canvas;
     if (!isEqual(prevObject, objectValues)) {
         const activeObject = canvas.getActiveObject();
-        console.log(activeObject)
         if (activeObject) {
           activeObject.set({ 
             left: objectValues.x, 
@@ -152,21 +154,17 @@ export default function SvgContainer() {
       const svgString = e.target.result;
 
       fabric.loadSVGFromString(svgString, (objects, options) => {
-        console.log(objects)
-        // objects[0].top += 38;
-        // objects[0].left += 38;
         const obj = fabric.util.groupSVGElements(objects, options);
 
         // Fit the SVG to the canvas dimensions
-        // if (obj.width > canvas.getWidth() || obj.height > canvas.getHeight()) {
-        //   const scaleX = canvas.width / obj.width;
-        //   const scaleY = canvas.height / obj.height;
-        //   const scale = Math.min(scaleX, scaleY);
-        //   obj.scale(scale);
-        // }
+        if (obj.width > canvas.getWidth() || obj.height > canvas.getHeight()) {
+          const scaleX = canvas.width / obj.width;
+          const scaleY = canvas.height / obj.height;
+          const scale = Math.min(scaleX, scaleY);
+          obj.scale(scale);
+        }
 
         obj.set({ selectable: true, hasControls: true });
-
         canvas.add(obj);
         canvas.renderAll();
       });
@@ -203,7 +201,7 @@ export default function SvgContainer() {
         <p>ScaleX : <span>{objectValues.scaleX}</span> &nbsp;&nbsp;&nbsp; ScaleY : <span>{objectValues.scaleY}</span></p>
         <p>X : <span>{objectValues.x}</span> &nbsp;&nbsp;&nbsp; Y : <span>{objectValues.y}</span></p>
         <button onClick={handleNewSVg}>New</button>
-        <button onClick={handleNewSVg}>Delete</button>
+        <button onClick={infoFabric}>INFO</button>
       </div>
 
       
