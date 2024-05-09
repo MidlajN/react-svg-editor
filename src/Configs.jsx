@@ -51,6 +51,19 @@ export default function ObjectConfigs(props) {
                         <input className='scale' maxLength={2} type="text" name='scaleY'  value={objectValues.scaleY} onChange={ handleInput } />
                     </div>
 
+                    {/* <div className="config  mt-6">
+                        <div>
+                            <span>pathOffset X :</span>
+                        </div>
+                        <input className='scale' maxLength={2} type="text" name='offsetX' value={objectValues.pathOffset.x} onChange={ handleInput }  />
+                    </div>
+                    <div className="config mt-4">
+                        <div>
+                            <span>pathOffset Y :</span>
+                        </div>
+                        <input className='scale' maxLength={2} type="text" name='offsetY'  value={objectValues.pathOffset.y} onChange={ handleInput } />
+                    </div> */}
+
                     
                     <div className="config mt-7">
                         <div>

@@ -2,15 +2,23 @@ import React, { useEffect, useRef, useState } from "react";
 import { fabric } from "fabric";
 import "./SvgContainer.css";
 import ObjectConfigs from "./Configs";
+import { act } from "react-dom/test-utils";
+import { split } from "postcss/lib/list";
 
 export default function SvgContainer() {
   const canvasRef = useRef(null);
   const dropAreaRef = useRef(null);
-  const [objectValues, setObjectValues] = useState({ x: 0, y: 0, scaleX: 0, scaleY: 0, rotateAngle: 0 });
+  const [objectValues, setObjectValues] = useState({ x: 0, y: 0, scaleX: 0, scaleY: 0, rotateAngle: 0});
   const [prevObject, setPrevObject] = useState(objectValues);
   const [message, setMessage] = useState(null);
 
   useEffect(() => {
+    fabric.Object.prototype.cornerStyle = 'circle';
+    fabric.Object.prototype.cornerColor = '#7f77eb85';
+    fabric.Object.prototype.transparentCorners = false;
+    fabric.Object.prototype.cornerSize = 12;
+    
+
     const canvas = new fabric.Canvas(canvasRef.current, {
       width: 800,
       height: 700,
@@ -22,15 +30,18 @@ export default function SvgContainer() {
     canvas.on("mouse:move", (e) => {
       const activeObject = canvas.getActiveObject();
       if (activeObject) {
+        // console.log('Active Object ;::', activeObject)
         const roundX = parseFloat(activeObject.left.toFixed(2));
         const roundY = parseFloat(activeObject.top.toFixed(2));
         const roundScaleX = parseFloat(activeObject.scaleX.toFixed(2));
         const roundScaleY = parseFloat(activeObject.scaleY.toFixed(2));
         const roundAngle = parseFloat(activeObject.angle.toFixed(2));
-
-        const object = { x: roundX, y: roundY, scaleX: roundScaleX, scaleY: roundScaleY, rotateAngle: roundAngle }
+        const pathOffset = activeObject.pathOffset;
+        
+        const object = { x: roundX, y: roundY, scaleX: roundScaleX, scaleY: roundScaleY, rotateAngle: roundAngle, pathOffset: pathOffset }
         setObjectValues(object);
         setPrevObject(object);
+        // console.log('SVG ::', activeObject.toSVG(), '\n \n [+] Canvas Svg : -----', canvas.toSVG());
       }
     });
     // Cleanup function to dispose the canvas when the component unmounts
@@ -39,6 +50,69 @@ export default function SvgContainer() {
     };
   }, []);
 
+  const handleNewSVg = () => {
+    const activeObject = canvas.getActiveObject();
+
+
+    if (activeObject.get('type') === 'activeSelection' || !activeObject) return;
+
+    activeObject.clone((cloned) => {
+      console.log('Cloned Object ::', activeObject)
+      const objects = cloned._objects;
+      console.log(activeObject.get('type'))
+
+      if (!objects && cloned.path) {
+        const mainArray = [];
+        // for (let i = 0; i < objects.length; i++) {
+          const paths = cloned.path;
+          let array = [];
+
+          for (let j = 0; j < paths.length; j++) {
+            const line = paths[j] ? paths[j].join(' ') : null;
+            const command = paths[j] ? paths[j][0] : null;
+
+            if (command === 'M' || j === paths.length - 1) {
+              if (array.length) {
+                // const [m, x, y] = array[0].split(' ')
+                let x = cloned.left + cloned.pathOffset
+                mainArray.push({mX : parseFloat(x), mY: parseFloat(y), path: array.join(' ')})
+              };
+              array = [];
+              array.push(line)
+              continue;
+            }
+            array.push(line)
+          }
+        // }
+
+        mainArray.forEach(path => {
+          if (path !== null) {
+            const fabricPath = new fabric.Path(path.path)
+            fabricPath.set({ selectable : true, hasControls: true,  scaleX: activeObject.scaleX, scaleY: activeObject.scaleY, top: activeObject.top, left: activeObject.left });
+            canvas.add(fabricPath)
+          }
+        })
+      } else {
+        objects.forEach(obj => {
+          canvas.discardActiveObject();
+          console.log('TOP : ', activeObject.top, '\t : ', obj.top, ' TOTAL : ', activeObject.top + obj.top, '\nLEFT : ', activeObject.left, '\t : ', obj.left, ' TOTAL : ', activeObject.left + obj.left)
+          obj.set({
+            top: activeObject.top - obj.top * activeObject.scaleX,
+            left: activeObject.left - obj.left * activeObject.scaleY,
+            scaleX: activeObject.scaleX * 3.78,
+            scaleY: activeObject.scaleY * 3.78,
+            angle: activeObject.angle,
+            evented: true,
+          })
+
+          canvas.add(obj)
+          canvas.setZoom(1)
+          canvas.renderAll()
+        })
+      }
+      canvas.remove(activeObject);
+    });
+  }
 
   useEffect(() => {
     const canvas = window.canvas;
@@ -53,12 +127,12 @@ export default function SvgContainer() {
             scaleY: objectValues.scaleY, 
             angle: objectValues.rotateAngle,
             originX: 'left',
-            originY: 'top'
+            originY: 'top',
           });
           canvas.renderAll();
         }
     }
-  },[objectValues])
+  },[objectValues]);
 
 
   const handleDragOver = (event) => {
@@ -78,15 +152,18 @@ export default function SvgContainer() {
       const svgString = e.target.result;
 
       fabric.loadSVGFromString(svgString, (objects, options) => {
+        console.log(objects)
+        // objects[0].top += 38;
+        // objects[0].left += 38;
         const obj = fabric.util.groupSVGElements(objects, options);
 
         // Fit the SVG to the canvas dimensions
-        if (obj.width > canvas.getWidth() || obj.height > canvas.getHeight()) {
-          const scaleX = canvas.width / obj.width;
-          const scaleY = canvas.height / obj.height;
-          const scale = Math.min(scaleX, scaleY);
-          obj.scale(scale);
-        }
+        // if (obj.width > canvas.getWidth() || obj.height > canvas.getHeight()) {
+        //   const scaleX = canvas.width / obj.width;
+        //   const scaleY = canvas.height / obj.height;
+        //   const scale = Math.min(scaleX, scaleY);
+        //   obj.scale(scale);
+        // }
 
         obj.set({ selectable: true, hasControls: true });
 
@@ -125,6 +202,8 @@ export default function SvgContainer() {
       <div className="values">
         <p>ScaleX : <span>{objectValues.scaleX}</span> &nbsp;&nbsp;&nbsp; ScaleY : <span>{objectValues.scaleY}</span></p>
         <p>X : <span>{objectValues.x}</span> &nbsp;&nbsp;&nbsp; Y : <span>{objectValues.y}</span></p>
+        <button onClick={handleNewSVg}>New</button>
+        <button onClick={handleNewSVg}>Delete</button>
       </div>
 
       
